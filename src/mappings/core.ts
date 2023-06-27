@@ -45,7 +45,7 @@ export function handleTransfer(event: Transfer): void {
   createUser(to)
 
   // get pair and load contract
-  let pair = Pair.load(event.address.toHexString())
+  let pair = Pair.load(event.address.toHexString()) as Pair
   let pairContract = PairContract.bind(event.address)
 
   // liquidity token amount being transfered
@@ -63,7 +63,7 @@ export function handleTransfer(event: Transfer): void {
   }
 
   // mints
-  let mints = transaction.mints
+  let mints = transaction.mints as string[]
   if (from.toHexString() == ADDRESS_ZERO) {
     // update total supply
     pair.totalSupply = pair.totalSupply.plus(value)
@@ -126,10 +126,10 @@ export function handleTransfer(event: Transfer): void {
     pair.save()
 
     // this is a new instance of a logical burn
-    let burns = transaction.burns
+    let burns = transaction.burns as string[]
     let burn: BurnEvent
     if (burns.length > 0) {
-      let currentBurn = BurnEvent.load(burns[burns.length - 1])
+      let currentBurn = BurnEvent.load(burns[burns.length - 1]) as BurnEvent
       if (currentBurn.needsComplete) {
         burn = currentBurn as BurnEvent
       } else {
@@ -163,7 +163,7 @@ export function handleTransfer(event: Transfer): void {
 
     // if this logical burn included a fee mint, account for this
     if (mints.length !== 0 && !isCompleteMint(mints[mints.length - 1])) {
-      let mint = MintEvent.load(mints[mints.length - 1])
+      let mint = MintEvent.load(mints[mints.length - 1]) as MintEvent
       burn.feeTo = mint.to
       burn.feeLiquidity = mint.liquidity
       // remove the logical mint
@@ -193,7 +193,7 @@ export function handleTransfer(event: Transfer): void {
     transaction.save()
   }
 
-  if (from.toHexString() != ADDRESS_ZERO && from.toHexString() != pair.id) {
+  if (from.toHexString() != ADDRESS_ZERO! && from.toHexString() != pair.id) {
     let fromUserLiquidityPosition = createLiquidityPosition(event.address, from)
     fromUserLiquidityPosition.liquidityTokenBalance = convertTokenToDecimal(pairContract.balanceOf(from), BI_18)
     fromUserLiquidityPosition.save()
@@ -277,8 +277,8 @@ export function handleSync(event: Sync): void {
 
 export function handleMint(event: Mint): void {
   let transaction = Transaction.load(event.transaction.hash.toHexString())
-  let mints = transaction.mints
-  let mint = MintEvent.load(mints[mints.length - 1])
+  let mints = transaction.mints as string[]
+  let mint = MintEvent.load(mints[mints.length - 1]) as MintEvent
 
   let pair = Pair.load(event.address.toHex())
   let uniswap = UniswapFactory.load(FACTORY_ADDRESS)
@@ -338,7 +338,7 @@ export function handleBurn(event: Burn): void {
     return
   }
 
-  let burns = transaction.burns
+  let burns = transaction.burns as string[]
   let burn = BurnEvent.load(burns[burns.length - 1])
 
   let pair = Pair.load(event.address.toHex())
